@@ -136,16 +136,7 @@ class Vector {
     } // end scale static method
 
 } // end Vector class
-// Locate the window a distance of 0.5 from the eye, and make it a 1x1 square normal to the look at vector
-//  and centered at(0.5, 0.5, 0), and parallel to the view up vector.With this scheme,
-const windowCenter = new Vector(0.5, 0.5, 0);
-const eyeVector = new Vector(.5, .5, -0.5); // Locate the eye at(0.5, 0.5, -0.5)
-const lookUpVector = new Vector(0, 1, 0); // with a view up vector of[0 1 0]
-// const lookUPVector = vec3.create(0, 1, 0); // with a view up vector of[0 1 0]
-// const lookAtVector = vec3.create(0, 0, 1); // and a look at vector of[0 0 1].
-const lookAtVector = new Vector(0, 0, 1); // with a view up vector of[0 1 0]
-// const whiteLightLocation = vec3.create(-3, 1, -0.5); // Put a white(1, 1, 1)(for ambient, diffuse and specular) light at location(-3, 1, -0.5).
-const whiteLightLocation = new Vector(-3, 1, -0.5);
+
 
 // Color constructor
 class Color {
@@ -187,6 +178,17 @@ class Color {
     } // end Color change method
 } // end color class
 
+// Locate the window a distance of 0.5 from the eye, and make it a 1x1 square normal to the look at vector
+//  and centered at(0.5, 0.5, 0), and parallel to the view up vector.With this scheme,
+const windowCenter = new Vector(0.5, 0.5, 0);
+const eyeVector = new Vector(.5, .5, -0.5); // Locate the eye at(0.5, 0.5, -0.5)
+const lookUpVector = new Vector(0, 1, 0); // with a view up vector of[0 1 0]
+// const lookUPVector = vec3.create(0, 1, 0); // with a view up vector of[0 1 0]
+// const lookAtVector = vec3.create(0, 0, 1); // and a look at vector of[0 0 1].
+const lookAtVector = new Vector(0, 0, 1); // with a view up vector of[0 1 0]
+// const whiteLightLocation = vec3.create(-3, 1, -0.5); // Put a white(1, 1, 1)(for ambient, diffuse and specular) light at location(-3, 1, -0.5).
+//const whiteLightLocation = new Vector(-3, 1, -0.5);
+const black = new Color(0, 0, 0, 255);
 
 /* utility functions */
 
@@ -686,33 +688,59 @@ function TriangleNormal(vertexA, vertexB, vertexC) {
     //triangle normal (N) = (B-A)X(C-A)
     //let cross1 = Vector.subtract(vertexB, vertexA);
     //let cross2 = Vector.subtract(vertexC, vertexA);
-    return Vector.cross(Vector.subtract(vertexB, vertexA), Vector.subtract(vertexC, vertexA));
+    //Vector.cross(Vector.subtract(vertexB, vertexA), Vector.subtract(vertexC, vertexA))
+    return Vector.normalize(Vector.cross(Vector.subtract(vertexB, vertexA), Vector.subtract(vertexC, vertexA)));
 }
 
+// function checkIfIntersectionIsInTriangle(intersectionVector, A, B, C) {
+//     //false for neg, true for pos sign
+//     let sign1 = false;
+//     let sign2 = false;
+//     let sign3 = false;
+//     if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(B, A), Vector.subtract(intersectionVector, A))) >= 0) {
+//         sign1 = true;
+//     }
+//     if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(C, B), Vector.subtract(intersectionVector, B))) >= 0) {
+//         sign2 = true;
+//         //quick check if sign1 and sign2 are different then we know the intersection is not in the triangle
+//         if (sign1 != sign2) {
+//             return false;
+//         }
+//     }
+//     if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(C, B), Vector.subtract(intersectionVector, B))) >= 0) {
+//         sign3 = true;
+//         //no need to quick check because final check is about to happen and computation has already occured
+//     }
+
+
+//     //returns true if all are same sign, false if else
+//     return (sign1 && (sign1 == sign2) && (sign2 == sign3));
+
+// }
+
 function checkIfIntersectionIsInTriangle(intersectionVector, A, B, C) {
-    //false for neg, true for pos sign
-    let sign1 = false;
-    let sign2 = false;
-    let sign3 = false;
-    if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(B, A), Vector.subtract(intersectionVector, A))) >= 0) {
-        sign1 = true;
-    }
-    if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(C, B), Vector.subtract(intersectionVector, B))) >= 0) {
-        sign2 = true;
-        //quick check if sign1 and sign2 are different then we know the intersection is not in the triangle
-        if (sign1 != sign2) {
-            return false;
-        }
-    }
-    if (Vector.dot(intersectionVector, Vector.cross(Vector.subtract(C, B), Vector.subtract(intersectionVector, B))) >= 0) {
-        sign3 = true;
-        //no need to quick check because final check is about to happen and computation has already occured
-    }
+    // Helper function to calculate the cross product of two vectors
 
+    // Vectors from the triangle vertices to the intersection point
+    const v0 = Vector.subtract(B, A);
+    const v1 = Vector.subtract(C, B);
+    const v2 = Vector.subtract(A, C);
 
-    //returns true if all are same sign, false if else
-    return ((sign1 == sign2) && (sign2 == sign3));
+    const p0 = Vector.subtract(intersectionVector, A);
+    const p1 = Vector.subtract(intersectionVector, B);
+    const p2 = Vector.subtract(intersectionVector, C);
 
+    // Calculate the cross products
+    const cross0 = Vector.cross(v0, p0);
+    const cross1 = Vector.cross(v1, p1);
+    const cross2 = Vector.cross(v2, p2);
+
+    // Calculate the dot products
+    const dot0 = Vector.dot(cross0, cross1);
+    const dot1 = Vector.dot(cross1, cross2);
+
+    // Check if the signs of the dot products are the same
+    return (dot0 >= 0) && (dot1 >= 0);
 }
 
 function getRayDistanceToTrianglePlane(vertexPos1, triangleNorm, rayDirectionVector) {
@@ -723,7 +751,7 @@ function getRayDistanceToTrianglePlane(vertexPos1, triangleNorm, rayDirectionVec
         //plane intersect!
 
         //triangle plane coefficient (d) = N dot A
-        const planeCoefficientD = Vector.dot(triangleNorm, vertexPos1);
+        let planeCoefficientD = Vector.dot(triangleNorm, vertexPos1);
 
         //return Vector.scale((1 / dotProduct(triangleNorm, planeCoefficientD)), Vector.subtract(planeCoefficientD, Vector.dot(triangleNorm, eyeVector)))
         //calculate ray distance to intersection
@@ -749,44 +777,53 @@ function shootRaycasts(context) {
     //var maxX = context.canvas.getBoundingClientRect().width;
     //var maxY = context.canvas.getBoundingClientRect().height;
 
+    // For each screen pixel
+    // Find the ray from the eye through the pixel 
+    // For each object in the scene 
+    // If the ray intersects the object, and is closest yet 
+    // Record intersection and object 
+    // Find color for closest intersection  
+
     var inputTriangles = getAllInputTriangles();
     var maxX = context.canvas.width;
     var maxY = context.canvas.height;
+    var closestIntersectionArray = Array.from({ length: maxY }, () => Array(maxX).fill(Infinity));
     var imagedata = context.createImageData(maxX, maxY);
     var c = new Color(0, 0, 0, 0); // init the triangle color (to be changed)
     var n = inputTriangles.length;
     // Loop over the input files
     //console.log("test0:");
     //console.log("number of files: " + n);
-    for (var f = 0; f < n; f++) {
-        //console.log("test1");
-        var tn = inputTriangles[f].triangles.length;
-        // Loop over the triangles, draw each in 2d
-        //console.log("number of triangles in this files: " + tn);
-        for (var t = 0; t < tn; t++) {
-            //gets index for vertex
-            var vertex1 = inputTriangles[f].triangles[t][0];
-            var vertex2 = inputTriangles[f].triangles[t][1];
-            var vertex3 = inputTriangles[f].triangles[t][2];
 
-            //var vertexPos1pre = inputTriangles[f].vertices[vertex1];
-            //var vertexPos2pre = inputTriangles[f].vertices[vertex2];
-            //var vertexPos3pre = inputTriangles[f].vertices[vertex3];
+    //console.log("test2");
+    //For each screen pixel
+    for (let xPix = 0; xPix < maxX; xPix++) {
+        //console.log("test3");
+        for (let yPix = 0; yPix < maxY; yPix++) {
+            // Find the ray from the eye through the pixel
+            let pixelLocation = translatePixelNumbersToLocation(xPix, yPix, maxX, maxY);
+            let rayDirectionVector = Vector.subtract(pixelLocation, eyeVector); //pixel - eye = ray direction
+            // For each object in the scene 
+            for (var f = 0; f < n; f++) {
+                //console.log("test1");
+                var tn = inputTriangles[f].triangles.length;
+                // Loop over the triangles, draw each in 2d
+                //console.log("number of triangles in this files: " + tn);
+                for (var t = 0; t < tn; t++) {
+                    //gets index for vertex
+                    var vertex1 = inputTriangles[f].triangles[t][0];
+                    var vertex2 = inputTriangles[f].triangles[t][1];
+                    var vertex3 = inputTriangles[f].triangles[t][2];
 
-            var vertexPos1 = new Vector(inputTriangles[f].vertices[vertex1][0], inputTriangles[f].vertices[vertex1][1], inputTriangles[f].vertices[vertex1][2]);
-            var vertexPos2 = new Vector(inputTriangles[f].vertices[vertex2][0], inputTriangles[f].vertices[vertex2][1], inputTriangles[f].vertices[vertex2][2]);
-            var vertexPos3 = new Vector(inputTriangles[f].vertices[vertex3][0], inputTriangles[f].vertices[vertex3][1], inputTriangles[f].vertices[vertex3][2]);
+                    //var vertexPos1pre = inputTriangles[f].vertices[vertex1];
+                    //var vertexPos2pre = inputTriangles[f].vertices[vertex2];
+                    //var vertexPos3pre = inputTriangles[f].vertices[vertex3];
 
-            let triangleNorm = TriangleNormal(vertexPos1, vertexPos2, vertexPos3);
-            //console.log("test2");
-            //For each screen pixel
-            for (let xPix = 0; xPix < maxX; xPix++) {
-                //console.log("test3");
-                for (let yPix = 0; yPix < maxY; yPix++) {
-                    // Find the ray from the eye through the pixel
-                    let pixelLocation = translatePixelNumbersToLocation(xPix, yPix, maxX, maxY);
-                    let rayDirectionVector = Vector.subtract(pixelLocation, eyeVector); //pixel - eye = ray direction
+                    var vertexPos1 = new Vector(inputTriangles[f].vertices[vertex1][0], inputTriangles[f].vertices[vertex1][1], inputTriangles[f].vertices[vertex1][2]);
+                    var vertexPos2 = new Vector(inputTriangles[f].vertices[vertex2][0], inputTriangles[f].vertices[vertex2][1], inputTriangles[f].vertices[vertex2][2]);
+                    var vertexPos3 = new Vector(inputTriangles[f].vertices[vertex3][0], inputTriangles[f].vertices[vertex3][1], inputTriangles[f].vertices[vertex3][2]);
 
+                    let triangleNorm = TriangleNormal(vertexPos1, vertexPos2, vertexPos3);
 
                     // if ray can reach triangle plane
                     let rayDistToTrianglePlane = getRayDistanceToTrianglePlane(vertexPos1, triangleNorm, rayDirectionVector);
@@ -796,15 +833,15 @@ function shootRaycasts(context) {
                         //eyeVector.toConsole("eyeVector: ");
 
                         let intersectionVector = Vector.add(eyeVector, Vector.scale(rayDistToTrianglePlane, rayDirectionVector));
-                        //check if intersection is in the triangle
-                        if (checkIfIntersectionIsInTriangle(intersectionVector, vertexPos1, vertexPos2, vertexPos3)) { // If the ray intersects the object, and is closest so far
+                        // If the ray intersects the object, and is closest yet 
+                        if (checkIfIntersectionIsInTriangle(intersectionVector, vertexPos1, vertexPos2, vertexPos3) && closestIntersectionArray[xPix][yPix] > rayDistToTrianglePlane) { // If the ray intersects the object, and is closest so far
                             // Record intersection and object (whole object or location of intersection or what? make new class?)
+                            closestIntersectionArray[xPix][yPix] = rayDistToTrianglePlane;
                             // Find color (and draw maybe?) for closest intersection
                             c.change(Math.floor(inputTriangles[f].material.diffuse[0] * 255), Math.floor(inputTriangles[f].material.diffuse[1] * 255), Math.floor(inputTriangles[f].material.diffuse[2] * 255), 255);
 
 
                             drawPixel(imagedata, xPix, yPix, c);
-                            //drawPixel(imagedata, intersectionVector.x, intersectionVector.y, c);
 
                             //outputs the ray, distance to triangle plane, and the intersection location
                             rayDirectionVector.toConsole("rayDirectionVector: ");
@@ -813,11 +850,14 @@ function shootRaycasts(context) {
                             intersectionVector.toConsole("Intersection at ");
                             //I wonder why it is the same length (1.82) to all the intersections?
                         }
-                        else {
-                            //console.log("NoIntersection");
-                        }
+                        // else {
+                        //     drawPixel(imagedata, xPix, yPix, black);
+                        // }
 
                     }
+                    // else {
+                    //     drawPixel(imagedata, xPix, yPix, black);
+                    // }
 
 
                     //         // //triangle normal (N) = (B-A)X(C-A)
