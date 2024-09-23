@@ -33,6 +33,73 @@ class Vector {
         }
     }
 
+    static toThePower(v1, c) {
+        try {
+            if (!(v1 instanceof Vector))
+                throw "Vector.toThePower: non-vector parameter";
+            else {
+                const newX = Math.pow(v1.x, c);
+                const newY = Math.pow(v1.y, c);
+                const newZ = Math.pow(v1.z, c);
+                return new Vector(newX, newY, newZ);
+            }
+        } catch (e) {
+            console.log(e);
+            return new Vector(NaN, NaN, NaN);
+        }
+    }
+
+    static magnitude(v1) {
+        try {
+            if (!(v1 instanceof Vector))
+                throw "Vector.magnitude: non-vector parameter";
+            else {
+                return Math.sqrt(Math.pow(v1.x, 2) + Math.pow(v1.y, 2) + Math.pow(v1.z, 2));
+            }
+        } catch (e) {
+            console.log(e);
+            return 0;
+        }
+    }
+
+    // Divide this vector by another vector to return a vector
+    static divide(v1, v2) {
+        try {
+            if (!(v1 instanceof Vector) || !(v2 instanceof Vector))
+                throw "Vector.divide: non-vector parameter";
+            else {
+                if (v2.x !== 0 && v2.y !== 0 && v2.z !== 0) {
+                    const newX = v1.x / v2.x;
+                    const newY = v1.y / v2.y;
+                    const newZ = v1.z / v2.z;
+                    return new Vector(newX, newY, newZ);
+                } else {
+                    throw "Vector.divide: Cannot divide by a vector with zero components.";
+                }
+            }
+        } catch (e) {
+            console.log(e);
+            return new Vector(NaN, NaN, NaN);
+        }
+    }
+
+    // multiply this vector by another vector to return a vector
+    static multiply(v1, v2) {
+        try {
+            if (!(v1 instanceof Vector) || !(v2 instanceof Vector))
+                throw "Vector.multiply: non-vector parameter";
+            else {
+                const newX = v1.x * v2.x;
+                const newY = v1.y * v2.y;
+                const newZ = v1.z * v2.z;
+                return new Vector(newX, newY, newZ);
+            }
+        } catch (e) {
+            console.log(e);
+            return new Vector(NaN, NaN, NaN);
+        }
+    }
+
     toConsole(prefix = "") {
         console.log(prefix + "[" + this.x + "," + this.y + "," + this.z + "]");
     } // end to console
@@ -86,6 +153,21 @@ class Vector {
         }
     } // end add static method
 
+    // static absolute add method || v1 + v2 ||
+    static absoluteAdd(v1, v2) {
+        try {
+            if (!(v1 instanceof Vector) || !(v2 instanceof Vector))
+                throw "Vector.add: non-vector parameter";
+            else
+                return (new Vector(Math.abs(v1.x + v2.x), Math.abs(v1.y + v2.y), Math.abs(v1.z + v2.z)));
+        } // end try
+
+        catch (e) {
+            console.log(e);
+            return (new Vector(NaN, NaN, NaN));
+        }
+    } // end add static method
+
     // static subtract method, v1-v2
     static subtract(v1, v2) {
         try {
@@ -117,6 +199,25 @@ class Vector {
             return (new Vector(NaN, NaN, NaN));
         }
     } // end scale static method
+
+    // static clamp  method
+    static clamp(v, min, max) {
+        try {
+            if (!(typeof (min) === "number") || !(typeof (max) === "number") || !(v instanceof Vector))
+                throw "Vector.scale: malformed parameter";
+            else
+                var clampedX = Math.max(min, Math.min(max, v.x));
+            var clampedY = Math.max(min, Math.min(max, v.y));
+            var clampedZ = Math.max(min, Math.min(max, v.z));
+
+            return new Vector(clampedX, clampedY, clampedZ);
+        } // end try
+
+        catch (e) {
+            console.log(e);
+            return (new Vector(NaN, NaN, NaN));
+        }
+    } // end clamp static method
 
     // static normalize method
     static normalize(v) {
@@ -176,6 +277,24 @@ class Color {
             console.log(e);
         }
     } // end Color change method
+
+    add(red, green, blue) {
+        try {
+            if ((typeof (red) !== "number") || (typeof (green) !== "number") || (typeof (blue) !== "number"))
+                throw "color component not a number";
+            else if ((red < 0) || (green < 0) || (blue < 0))
+                throw "color component less than 0";
+            else if ((red > 255) || (green > 255) || (blue > 255))
+                throw "color component bigger than 255";
+            else {
+                this.r += red; this.g += green; this.b += blue;
+            }
+        } // end throw
+
+        catch (e) {
+            console.log(e);
+        }
+    }
 } // end color class
 
 // Locate the window a distance of 0.5 from the eye, and make it a 1x1 square normal to the look at vector
@@ -255,6 +374,27 @@ function getInputEllipsoids() {
     } else
         return JSON.parse(httpReq.response);
 } // end get input ellipsoids
+
+// get the input ellipsoids from the standard class URL
+function getInputLights() {
+    const INPUT_LIGHTS_URL =
+        "https://ncsucgclass.github.io/prog1/lights.json";
+
+    // load the lights file
+    var httpReq = new XMLHttpRequest(); // a new http request
+    httpReq.open("GET", INPUT_LIGHTS_URL, false); // init the request
+    httpReq.send(null); // send the request
+    var startTime = Date.now();
+    while ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE)) {
+        if ((Date.now() - startTime) > 3000)
+            break;
+    } // until its loaded or we time out after three seconds
+    if ((httpReq.status !== 200) || (httpReq.readyState !== XMLHttpRequest.DONE)) {
+        console.log * ("Unable to open input lights file!");
+        return String.null;
+    } else
+        return JSON.parse(httpReq.response);
+} // end get input lights
 
 //get the input triangles from the standard class URL
 function getInputTriangles() {
@@ -642,6 +782,8 @@ function getAllInputTriangles() {
     }
 } // end getInputTriangles
 
+
+
 /**
  * translates a x and y pixel location to real world position
  * @param {number} xPix is the x location of the input pixel on the screen
@@ -765,6 +907,104 @@ function getRayDistanceToTrianglePlane(vertexPos1, triangleNorm, rayDirectionVec
     }
 }
 
+// /**
+//  * like if there are 80 degrees between eye and light andle reflected on surface then H would be the vector at 40 degrees
+//  * @param {Vector} lightPosition is the position of the light to get halfway vector from eye
+//  */
+// function getHalfwayVector(lightPosition) {
+//     //v + l / abs( v + l )
+//     let numerator = Vector.add(eyeVector, lightPosition);
+//     let denominator = Vector.absoluteAdd(eyeVector, lightPosition);
+//     //let denominator = new Vector(Math.abs(eyeVector.x + lightPosition.x), Math.abs(eyeVector.y + lightPosition.y), Math.abs(eyeVector.z + lightPosition.z))
+//     return Vector.normalize(Vector.divide(numerator, denominator));
+// }
+
+/**
+ * like if there are 80 degrees between eye and light andle reflected on surface then H would be the vector at 40 degrees
+ */
+// function getHalfwayVector(lightPosition, rayDirectionVector) {
+//     //numerator = v + l
+//     // sum of the light direction and view direction (will be ray instead of eye?)
+//     const numerator = Vector.add(Vector.normalize(rayDirectionVector), Vector.normalize(lightPosition));
+
+//     // normalize the resulting vector and return
+//     const denominator = Vector.magnitude(numerator);
+//     //return v + l / abs( v + l )
+//     return Vector.normalize(Vector.scale(1 / denominator, numerator));
+// }
+
+function getHalfwayVector(lightPosition, rayDirectionVector) {
+    //return Vector.normalize(Vector.add(rayDirectionVector, lightPosition));
+    // Calculate the sum of light direction and view direction
+    const numerator = Vector.add(Vector.normalize(rayDirectionVector), Vector.normalize(lightPosition));
+
+    // // Calculate the magnitude (length) of the sum
+    const denominator = Vector.magnitude(numerator);
+
+    // // Normalize the resulting vector and return
+    return Vector.scale(1 / denominator, numerator);
+}
+
+
+// /**
+//  * calculates how a vector will bounce off of a surface's normal vector
+//  * @param {Vector} surfaceNorm is the normal of the surface
+//  * @param {*} lightVector is the vector of the incoming light to be reflected
+//  */
+// function getReflectedVectorOverNormal(surfaceNorm, lightVector) {
+
+//     // R = 2 * (N dot L)N - L
+//     // R = 2 * (N dot L) = 2 * Vector.dot(surfaceNorm, lightVector)
+//     // R = 2 * (N dot L) * N = Vector.scale((2 * Vector.dot(surfaceNorm, lightVector)), surfaceNorm)
+//     // R = 2 * (N dot L)N - L = Vector.subtract((Vector.scale((2 * Vector.dot(surfaceNorm, lightVector)), surfaceNorm)), lightVector);
+
+//     return Vector.subtract((Vector.scale((2 * Vector.normalize(Vector.dot(surfaceNorm, lightVector))), surfaceNorm)), lightVector);
+// }
+
+function BlinnPhongEquation(shapeAmbient, shapeDiffuse, shapeSpecular, lightAmbient, lightDiffuse, lightSpecular, triangleNorm, pointToLightVector, reflectionExponent, halfwayVector) {
+    //Ka*La + Kd*Ld (N•L) + Ks*Ls*(N•H)^n = color
+    //Ambient: Ka*La
+    let ambient = Vector.multiply(shapeAmbient, lightAmbient);
+    //Diffuse: Kd*Ld* max((N•L), 0)
+    //let diffuse = Vector.scale(Vector.scale(Vector.dot(triangleNorm, pointToLightVector), Vector.multiply(shapeDiffuse, lightDiffuse)), Math.max(Vector.dot(triangleNorm, pointToLightVector), 0));
+    let diffuse = Vector.scale(Math.max(Vector.dot(triangleNorm, pointToLightVector), 0), Vector.multiply(shapeDiffuse, lightDiffuse));
+
+    //specular: Ks*Ls * max((N•H), 0)^n
+    //let specular = Vector.scale(Math.pow(Vector.dot(reflectedLightVector, vectorFromPointToEye), reflectionExponent), Vector.multiply(shapeSpecular, lightSpecular));
+    //specular: Ks*Ls * max((N•H), 0)^n
+    let specular = Vector.scale(Math.pow(Math.max(Vector.dot(triangleNorm, halfwayVector), 0), reflectionExponent), Vector.multiply(shapeSpecular, lightSpecular));
+    //add them all together
+    let totalVector = Vector.add(Vector.add(ambient, diffuse), specular);
+    //vector will have components of values between 0 and 1, need to adjust for color max of 255
+    totalVector = Vector.clamp(Vector.scale(255, totalVector), 0, 255);
+    //no color val can be below 0 or above 255
+    totalVector.toConsole("blinnPhongColorVec: ");
+    //convert vector to color and set alpha to 255 (opaque)
+    return new Color(totalVector.x, totalVector.y, totalVector.z, 255);
+}
+
+function newBlinnPhongEquation(shapeAmbient, shapeDiffuse, shapeSpecular, lightAmbient, lightDiffuse, lightSpecular, triangleNorm, pointToLightVector, reflectionExponent, halfwayVector) {
+    //Ka*La + Kd*Ld (N•L) + Ks*Ls*(N•H)^n = color
+    //Ambient: Ka*La
+    let ambient = Vector.multiply(shapeAmbient, lightAmbient);
+    //Diffuse: Kd*Ld* max((N•L), 0)
+    //let diffuse = Vector.scale(Vector.scale(Vector.dot(triangleNorm, pointToLightVector), Vector.multiply(shapeDiffuse, lightDiffuse)), Math.max(Vector.dot(triangleNorm, pointToLightVector), 0));
+    let diffuse = Vector.scale(Math.max(Vector.dot(triangleNorm, pointToLightVector), 0), Vector.multiply(shapeDiffuse, lightDiffuse));
+
+    //specular: Ks*Ls * max((N•H), 0)^n
+    let specular = Vector.scale(Math.pow(Math.max(Vector.dot(triangleNorm, halfwayVector), 0), reflectionExponent), Vector.multiply(shapeSpecular, lightSpecular));
+    //add them all together
+    let totalVector = Vector.add(Vector.add(ambient, diffuse), specular);
+    //vector will have components of values between 0 and 1, need to adjust for color max of 255
+    totalVector = Vector.scale(255, totalVector);
+
+    totalVector = Vector.clamp(totalVector, 0, 255);
+    //no color val can be below 0 or above 255
+    totalVector.toConsole("blinnPhongColorVec: ");
+    //convert vector to color and set alpha to 255 (opaque)
+    return new Color(totalVector.x, totalVector.y, totalVector.z, 255);
+}
+
 
 
 /**
@@ -837,55 +1077,94 @@ function shootRaycasts(context) {
                         if (checkIfIntersectionIsInTriangle(intersectionVector, vertexPos1, vertexPos2, vertexPos3) && closestIntersectionArray[xPix][yPix] > rayDistToTrianglePlane) { // If the ray intersects the object, and is closest so far
                             // Record intersection and object (whole object or location of intersection or what? make new class?)
                             closestIntersectionArray[xPix][yPix] = rayDistToTrianglePlane;
-                            // Find color (and draw maybe?) for closest intersection
-                            c.change(Math.floor(inputTriangles[f].material.diffuse[0] * 255), Math.floor(inputTriangles[f].material.diffuse[1] * 255), Math.floor(inputTriangles[f].material.diffuse[2] * 255), 255);
+                            // Find color for closest intersection
+                            //c.change(Math.floor(inputTriangles[f].material.diffuse[0] * 255), Math.floor(inputTriangles[f].material.diffuse[1] * 255), Math.floor(inputTriangles[f].material.diffuse[2] * 255), 255);
+
+                            //perform Blinn Phong lighting math to get correct colors
+                            //get light(s) first
+                            var inputLights = getInputLights();
+                            var finalColor = new Color(0, 0, 0, 255);
+                            for (let i = 0; i < inputLights.length; i++) {
+                                //get ambient, diffuse, and specular of light
+                                var currLight = inputLights[i];
+                                //get position
+                                var lightPosition = new Vector(currLight.x, currLight.y, currLight.z);
+                                //ambient (La)
+                                var lightAmbient = new Vector(currLight.ambient[0], currLight.ambient[1], currLight.ambient[2]);
+                                //diffuse (Ld)
+                                var lightDiffuse = new Vector(currLight.diffuse[0], currLight.diffuse[1], currLight.diffuse[2]);
+                                //specular (Ls)
+                                var lightSpecular = new Vector(currLight.specular[0], currLight.specular[1], currLight.specular[2]);
+
+                                //get ambient, diffuse, specular, and exponent of triangle
+                                // Ka
+                                var shapeAmbient = new Vector(inputTriangles[f].material.ambient[0], inputTriangles[f].material.ambient[1], inputTriangles[f].material.ambient[2]);
+                                // Kd
+                                var shapeDiffuse = new Vector(inputTriangles[f].material.diffuse[0], inputTriangles[f].material.diffuse[1], inputTriangles[f].material.diffuse[2]);
+                                // Ks
+                                var shapeSpecular = new Vector(inputTriangles[f].material.specular[0], inputTriangles[f].material.specular[1], inputTriangles[f].material.specular[2]);
+                                // n
+                                var reflectionExponent = inputTriangles[f].material.n;
+
+                                //Old phong: Ka*La + Kd*Ld*(N•L) + Ks*Ls*(R•V)^n = color
+                                //new binn phong: Ka*La + Kd*Ld (N•L) + Ks*Ls*(N•H)^n = color
+                                // N is the surface normal at the point (triangleNorm will be the same at all points of the triangle)
+
+                                // L is the normalized vector pointing from the surface point toward the light source.
+                                //let pointToLightVector = Vector.normalize(Vector.subtract(lightPosition, intersectionVector));
+                                let pointToLightVector = Vector.normalize(Vector.subtract(lightPosition, intersectionVector));
+
+                                // R is the normalized vector representing the direction of the reflected light.
+                                //let reflectedLightVector = getReflectedVectorOverNormal(triangleNorm, pointToLightVector);
+
+                                // V is the normalized vector pointing from the surface point toward the viewer or camera.
+                                //let vectorFromPointToEye = Vector.normalize(Vector.subtract(eyeVector, intersectionVector));
+                                let vectorFromPointToEye = Vector.normalize(Vector.subtract(eyeVector, intersectionVector));
+
+                                if (Vector.dot(triangleNorm, vectorFromPointToEye) < 0) {
+                                    triangleNorm = Vector.scale(-1, triangleNorm)
+                                }
+
+                                // H is the halfway vector beteen light vec and eye ray vec
+                                // H: Halfway vector (normalized)
+                                //let halfwayVector = Vector.normalize(Vector.add(vectorFromPointToEye, pointToLightVector));
+                                //var halfwayVector = getHalfwayVector(pointToLightVector, vectorFromPointToEye);
+                                var halfwayVector = getHalfwayVector(pointToLightVector, vectorFromPointToEye); // Remove extra normalization if getHalfwayVector normalizes internally
+
+                                // Perform the Blinn-Phong calculation without normalizing the color and light inputs
+                                var shadeColor = BlinnPhongEquation(
+                                    shapeAmbient,
+                                    shapeDiffuse,
+                                    shapeSpecular,
+                                    lightAmbient,
+                                    lightDiffuse,
+                                    lightSpecular,
+                                    Vector.normalize(triangleNorm),
+                                    Vector.normalize(pointToLightVector),
+                                    reflectionExponent,
+                                    Vector.normalize(halfwayVector)
+                                );
+                                finalColor.add(shadeColor.r, shadeColor.g, shadeColor.b);
+                            }
 
 
-                            drawPixel(imagedata, xPix, yPix, c);
+
+                            //draw pixel to imagedata (to be rendered after loops)
+                            drawPixel(imagedata, xPix, yPix, finalColor);
 
                             //outputs the ray, distance to triangle plane, and the intersection location
-                            rayDirectionVector.toConsole("rayDirectionVector: ");
-                            console.log("rayDistToTrianglePlane: " + rayDistToTrianglePlane);
+                            //rayDirectionVector.toConsole("rayDirectionVector: ");
+                            //console.log("rayDistToTrianglePlane: " + rayDistToTrianglePlane);
                             //print out intersection location
-                            intersectionVector.toConsole("Intersection at ");
-                            //I wonder why it is the same length (1.82) to all the intersections?
+                            //intersectionVector.toConsole("Intersection at ");
+
                         }
-                        // else {
-                        //     drawPixel(imagedata, xPix, yPix, black);
-                        // }
 
                     }
-                    // else {
-                    //     drawPixel(imagedata, xPix, yPix, black);
-                    // }
-
-
-                    //         // //triangle normal (N) = (B-A)X(C-A)
-                    //         // const triangleNorm = TriangleNormal(vertexPos1, vertexPos2, vertexPos3);
-
-                    //         // //if N dot D != 0 there is a plane intersection
-                    //         // if (dotProduct(triangleNorm, rayDirectionVector) != 0) {
-                    //         //     //plane intersect!
-
-                    //         //     //triangle plane coefficient (d) = N dot A
-                    //         //     const planeCoefficientD = dotProduct(triangleNorm, vertexPos1);
-
-                    //         //     //calculate ray distance to intersection
-                    //         //     //t = (d - N dot E) / N dot D
-                    //         //     const rayDistToIntersection = (planeCoefficientD - dotProduct(triangleNorm, eyeVector)) / dotProduct(triangleNorm, planeCoefficientD);
-
-
-                    //         // }
-
-                    //     }
-                    // }
 
                 }
             }
 
-
-
-            //** if t < 1 then in front of pixel and don't render **
 
         }
     }
