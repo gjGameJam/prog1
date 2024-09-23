@@ -396,25 +396,72 @@ function getInputLights() {
         return JSON.parse(httpReq.response);
 } // end get input lights
 
-// get the input ellipsoids from the standard class URL
+// get new manual input lights
 function getCustomInputLights() {
-    const INPUT_LIGHTS_URL =
-        "https://ncsucgclass.github.io/prog1/lights2.json";
-
-    // load the lights file
-    var httpReq = new XMLHttpRequest(); // a new http request
-    httpReq.open("GET", INPUT_LIGHTS_URL, false); // init the request
-    httpReq.send(null); // send the request
-    var startTime = Date.now();
-    while ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE)) {
-        if ((Date.now() - startTime) > 3000)
-            break;
-    } // until its loaded or we time out after three seconds
-    if ((httpReq.status !== 200) || (httpReq.readyState !== XMLHttpRequest.DONE)) {
-        console.log * ("Unable to open input lights file!");
-        return String.null;
-    } else
-        return JSON.parse(httpReq.response);
+    // Embed the JSON data directly in your script
+    const lightsData = [
+        {
+            "x": -0.5,
+            "y": 1.5,
+            "z": -0.5,
+            "ambient": [
+                1,
+                1,
+                1
+            ],
+            "diffuse": [
+                1,
+                1,
+                1
+            ],
+            "specular": [
+                1,
+                1,
+                1
+            ]
+        },
+        {
+            "x": -3,
+            "y": 1.5,
+            "z": -8.5,
+            "ambient": [
+                1,
+                0.5,
+                1
+            ],
+            "diffuse": [
+                1,
+                1,
+                1
+            ],
+            "specular": [
+                1,
+                1,
+                1
+            ]
+        },
+        {
+            "x": 0,
+            "y": 4,
+            "z": -1,
+            "ambient": [
+                1,
+                0.5,
+                1
+            ],
+            "diffuse": [
+                1,
+                1,
+                1
+            ],
+            "specular": [
+                1,
+                1,
+                1
+            ]
+        }
+    ]
+    return lightsData;
 } // end get input lights
 
 //get the input triangles from the standard class URL
