@@ -306,7 +306,7 @@ const lookUpVector = new Vector(0, 1, 0); // with a view up vector of[0 1 0]
 // const lookAtVector = vec3.create(0, 0, 1); // and a look at vector of[0 0 1].
 const lookAtVector = new Vector(0, 0, 1); // with a view up vector of[0 1 0]
 // const whiteLightLocation = vec3.create(-3, 1, -0.5); // Put a white(1, 1, 1)(for ambient, diffuse and specular) light at location(-3, 1, -0.5).
-//const whiteLightLocation = new Vector(-3, 1, -0.5);
+const whiteLightLocation = new Vector(-3, 1, -0.5);
 const black = new Color(0, 0, 0, 255);
 
 /* utility functions */
@@ -749,7 +749,6 @@ function drawInputBoxesUsingPaths(context) {
 
 //get all the input triangles from the standard class URL
 function getAllInputTriangles() {
-    const INPUT_TRIANGLES_URL1 = "https://ncsucgclass.github.io/prog1/triangles.json";
     const INPUT_TRIANGLES_URL2 = "https://ncsucgclass.github.io/prog1/triangles2.json";
 
     // Function to load a file
@@ -771,12 +770,11 @@ function getAllInputTriangles() {
     }
 
     // Load both files
-    var triangles1 = loadFile(INPUT_TRIANGLES_URL1);
     var triangles2 = loadFile(INPUT_TRIANGLES_URL2);
 
     // Combine the contents of both files
-    if (triangles1 && triangles2) {
-        return triangles1.concat(triangles2);
+    if (triangles2) {
+        return triangles2;
     } else {
         return null;
     }
@@ -935,13 +933,13 @@ function getRayDistanceToTrianglePlane(vertexPos1, triangleNorm, rayDirectionVec
 
 function getHalfwayVector(lightPosition, rayDirectionVector) {
     //return Vector.normalize(Vector.add(rayDirectionVector, lightPosition));
-    // Calculate the sum of light direction and view direction
+    // get the sum of light direction and view direction
     const numerator = Vector.add(Vector.normalize(rayDirectionVector), Vector.normalize(lightPosition));
 
-    // // Calculate the magnitude (length) of the sum
+    // get magnitude (length) of the sum
     const denominator = Vector.magnitude(numerator);
 
-    // // Normalize the resulting vector and return
+    // ret resulting vector and return
     return Vector.scale(1 / denominator, numerator);
 }
 
@@ -978,7 +976,7 @@ function BlinnPhongEquation(shapeAmbient, shapeDiffuse, shapeSpecular, lightAmbi
     //vector will have components of values between 0 and 1, need to adjust for color max of 255
     totalVector = Vector.clamp(Vector.scale(255, totalVector), 0, 255);
     //no color val can be below 0 or above 255
-    totalVector.toConsole("blinnPhongColorVec: ");
+    //totalVector.toConsole("blinnPhongColorVec: ");
     //convert vector to color and set alpha to 255 (opaque)
     return new Color(totalVector.x, totalVector.y, totalVector.z, 255);
 }
@@ -1000,7 +998,7 @@ function newBlinnPhongEquation(shapeAmbient, shapeDiffuse, shapeSpecular, lightA
 
     totalVector = Vector.clamp(totalVector, 0, 255);
     //no color val can be below 0 or above 255
-    totalVector.toConsole("blinnPhongColorVec: ");
+    //totalVector.toConsole("blinnPhongColorVec: ");
     //convert vector to color and set alpha to 255 (opaque)
     return new Color(totalVector.x, totalVector.y, totalVector.z, 255);
 }
@@ -1106,13 +1104,11 @@ function shootRaycasts(context) {
                                 // n
                                 var reflectionExponent = inputTriangles[f].material.n;
 
-                                //Old phong: Ka*La + Kd*Ld*(N•L) + Ks*Ls*(R•V)^n = color
                                 //new binn phong: Ka*La + Kd*Ld (N•L) + Ks*Ls*(N•H)^n = color
                                 // N is the surface normal at the point (triangleNorm will be the same at all points of the triangle)
-
                                 // L is the normalized vector pointing from the surface point toward the light source.
+                                let pointToLightVector = Vector.normalize(Vector.subtract(whiteLightLocation, intersectionVector));
                                 //let pointToLightVector = Vector.normalize(Vector.subtract(lightPosition, intersectionVector));
-                                let pointToLightVector = Vector.normalize(Vector.subtract(lightPosition, intersectionVector));
 
                                 // R is the normalized vector representing the direction of the reflected light.
                                 //let reflectedLightVector = getReflectedVectorOverNormal(triangleNorm, pointToLightVector);
@@ -1127,8 +1123,6 @@ function shootRaycasts(context) {
 
                                 // H is the halfway vector beteen light vec and eye ray vec
                                 // H: Halfway vector (normalized)
-                                //let halfwayVector = Vector.normalize(Vector.add(vectorFromPointToEye, pointToLightVector));
-                                //var halfwayVector = getHalfwayVector(pointToLightVector, vectorFromPointToEye);
                                 var halfwayVector = getHalfwayVector(pointToLightVector, vectorFromPointToEye); // Remove extra normalization if getHalfwayVector normalizes internally
 
                                 // Perform the Blinn-Phong calculation without normalizing the color and light inputs
@@ -1144,10 +1138,9 @@ function shootRaycasts(context) {
                                     reflectionExponent,
                                     Vector.normalize(halfwayVector)
                                 );
+                                //add blinn phong color from individual light (accumulate over all lights)
                                 finalColor.add(shadeColor.r, shadeColor.g, shadeColor.b);
                             }
-
-
 
                             //draw pixel to imagedata (to be rendered after loops)
                             drawPixel(imagedata, xPix, yPix, finalColor);
@@ -1169,6 +1162,7 @@ function shootRaycasts(context) {
         }
     }
 
+    console.log("finished blinn phong");
     // After the loops, draw the image data
     context.putImageData(imagedata, 0, 0);
 }
