@@ -1173,6 +1173,41 @@ function shootRaycasts(context) {
     context.putImageData(imagedata, 0, 0);
 }
 
+// Listen for the keydown event
+window.addEventListener("keydown", function (event) {
+    // Check if the pressed key is the space bar
+    if (event.code === "Space") {
+        onSpaceBarPress();
+        //prevent scroll
+        event.preventDefault();
+    }
+});
+
+//function for customization when space bar is pressed
+function onSpaceBarPress() {
+    var canvas = document.getElementById("viewport");
+    let con = canvas.getContext("2d")
+    var maxX = con.canvas.width;
+    var maxY = con.canvas.height;
+    var imagedata = con.createImageData(maxX, maxY);
+    for (let xPix = 0; xPix < maxX; xPix++) {
+
+        for (let yPix = 0; yPix < maxY; yPix++) {
+            drawPixel(imagedata, xPix, yPix, getRandomColor());
+
+        }
+
+    }
+    // After the loops, draw the image data
+    con.putImageData(imagedata, 0, 0);
+}
+
+//function for getting random color
+function getRandomColor() {
+    return new Color(Math.random() * 255, Math.random() * 255, Math.random() * 255, 255);
+    //return 
+}
+
 /* main -- here is where execution begins after window load */
 
 function main() {
