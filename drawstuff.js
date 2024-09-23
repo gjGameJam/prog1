@@ -396,6 +396,27 @@ function getInputLights() {
         return JSON.parse(httpReq.response);
 } // end get input lights
 
+// get the input ellipsoids from the standard class URL
+function getCustomInputLights() {
+    const INPUT_LIGHTS_URL =
+        "https://ncsucgclass.github.io/prog1/lights2.json";
+
+    // load the lights file
+    var httpReq = new XMLHttpRequest(); // a new http request
+    httpReq.open("GET", INPUT_LIGHTS_URL, false); // init the request
+    httpReq.send(null); // send the request
+    var startTime = Date.now();
+    while ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE)) {
+        if ((Date.now() - startTime) > 3000)
+            break;
+    } // until its loaded or we time out after three seconds
+    if ((httpReq.status !== 200) || (httpReq.readyState !== XMLHttpRequest.DONE)) {
+        console.log * ("Unable to open input lights file!");
+        return String.null;
+    } else
+        return JSON.parse(httpReq.response);
+} // end get input lights
+
 //get the input triangles from the standard class URL
 function getInputTriangles() {
     const INPUT_TRIANGLES_URL =
@@ -1009,7 +1030,7 @@ function newBlinnPhongEquation(shapeAmbient, shapeDiffuse, shapeSpecular, lightA
  * shoots raycasts to record intersections and colors of objects hit by rays
  * @param {CanvasRenderingContext2D} context 
  */
-function shootRaycasts(context) {
+function shootRaycasts(context, lightFunction) {
     console.log("raycasting");
     //bottom left is 0,0
     //var maxX = context.canvas.getBoundingClientRect().width;
@@ -1080,7 +1101,7 @@ function shootRaycasts(context) {
 
                             //perform Blinn Phong lighting math to get correct colors
                             //get light(s) first
-                            var inputLights = getInputLights();
+                            var inputLights = lightFunction();
                             var finalColor = new Color(0, 0, 0, 255);
                             for (let i = 0; i < inputLights.length; i++) {
                                 //get ambient, diffuse, and specular of light
@@ -1181,19 +1202,20 @@ window.addEventListener("keydown", function (event) {
 function onSpaceBarPress() {
     var canvas = document.getElementById("viewport");
     let con = canvas.getContext("2d")
-    var maxX = con.canvas.width;
-    var maxY = con.canvas.height;
-    var imagedata = con.createImageData(maxX, maxY);
-    for (let xPix = 0; xPix < maxX; xPix++) {
+    // var maxX = con.canvas.width;
+    // var maxY = con.canvas.height;
+    // var imagedata = con.createImageData(maxX, maxY);
+    shootRaycasts(con, getCustomInputLights);
+    // for (let xPix = 0; xPix < maxX; xPix++) {
 
-        for (let yPix = 0; yPix < maxY; yPix++) {
-            drawPixel(imagedata, xPix, yPix, getRandomColor());
+    //     for (let yPix = 0; yPix < maxY; yPix++) {
+    //         drawPixel(imagedata, xPix, yPix, getRandomColor());
 
-        }
+    //     }
 
-    }
-    // After the loops, draw the image data
-    con.putImageData(imagedata, 0, 0);
+    // }
+    // // After the loops, draw the image data
+    // con.putImageData(imagedata, 0, 0);
 }
 
 //function for getting random color
@@ -1232,5 +1254,5 @@ function main() {
     //drawInputBoxesUsingPaths(context);
     // shows how to read input file, but not how to draw pixels
 
-    shootRaycasts(context);
+    shootRaycasts(context, getInputLights);
 }
